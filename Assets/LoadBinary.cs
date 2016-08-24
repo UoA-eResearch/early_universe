@@ -13,12 +13,11 @@ public class LoadBinary : MonoBehaviour
     private float[][] serializableClouds;
     private ParticleSystem.Particle[][] clouds;
     const string serializeFilename = "clouds.bin";
-    private int lastTime = 0;
     
     [Range(10, 100)]
     public int resolution = 10;
 
-    [Range(1, 100)]
+    [Range(1, 2000)]
     public int fileCount = 10;
     
     [Serializable]
@@ -80,6 +79,7 @@ public class LoadBinary : MonoBehaviour
                 clouds = deserializeClouds(result.clouds);
                 sw.Stop();
                 print("loaded stored " + serializeFilename + " took " + sw.Elapsed);
+                StartCoroutine(ChangeFrame());
                 return;
             }
         }
@@ -101,21 +101,20 @@ public class LoadBinary : MonoBehaviour
         clouds = deserializeClouds(serializableClouds);
         sw.Stop();
         print("stored " + serializeFilename + " - took " + sw.Elapsed);
-        ParticleSystem ps = GetComponent<ParticleSystem>();
-        ps.SetParticles(clouds[0], clouds[0].Length);
+        StartCoroutine(ChangeFrame());
     }
 
     // Update is called once per frame
-    void Update()
+    IEnumerator ChangeFrame()
     {
-        int t = (int)Time.time;
-        if (t != lastTime)
-        {
-            lastTime = t;
-            int i = t % clouds.Length;
+        int i = 0;
+        while (true) {
+            i = i % clouds.Length;
             print("Changing to " + i);
             ParticleSystem ps = GetComponent<ParticleSystem>();
             ps.SetParticles(clouds[i], clouds[i].Length);
+            i++;
+            yield return new WaitForSeconds(.1f);
         }
     }
 }
